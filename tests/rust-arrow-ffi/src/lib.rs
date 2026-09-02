@@ -1,30 +1,27 @@
-mod error;
 mod ffi;
-use arrow2::io::ipc::read::{read_file_metadata, FileReader as IPCFileReader};
+
 use std::io::Cursor;
 
-use crate::error::WasmResult;
-use crate::ffi::{FFIArrowChunk, FFIArrowRecordBatch, FFIArrowSchema, FFIArrowTable};
+use arrow_array::RecordBatch;
+use arrow_ipc::reader::FileReader;
+use arrow_schema::SchemaRef;
 use wasm_bindgen::prelude::*;
+
+pub use crate::ffi::{FFIArrowRecordBatch, FFIArrowTable};
+
+type WasmResult<T> = Result<T, JsError>;
+
+fn read_ipc_file(arrow_file: &[u8]) -> WasmResult<(SchemaRef, Vec<RecordBatch>)> {
+    let reader = FileReader::try_new(Cursor::new(arrow_file), None)?;
+    let schema = reader.schema();
+    let batches = reader.collect::<Result<Vec<_>, _>>()?;
+    Ok((schema, batches))
+}
 
 #[wasm_bindgen(js_name = arrowIPCToFFI)]
 pub fn arrow_ipc_to_ffi(arrow_file: &[u8]) -> WasmResult<FFIArrowTable> {
-    // Create IPC reader
-    let mut input_file = Cursor::new(arrow_file);
-    let stream_metadata = read_file_metadata(&mut input_file)?;
-    let arrow_ipc_reader = IPCFileReader::new(input_file, stream_metadata.clone(), None, None);
-    let schema = &stream_metadata.schema;
-
-    let ffi_schema: FFIArrowSchema = schema.into();
-    let mut ffi_chunks: Vec<FFIArrowChunk> = vec![];
-
-    // Iterate over reader chunks, storing each in memory to be used for FFI
-    for maybe_chunk in arrow_ipc_reader {
-        let chunk = maybe_chunk?;
-        ffi_chunks.push(chunk.into());
-    }
-
-    Ok((ffi_schema, ffi_chunks).into())
+    let (schema, batches) = read_ipc_file(arrow_file)?;
+    Ok(FFIArrowTable::new(&schema, &batches)?)
 }
 
 #[wasm_bindgen(js_name = arrowIPCToFFIRecordBatch)]
@@ -32,19 +29,28 @@ pub fn arrow_ipc_to_ffi_record_batch(
     arrow_file: &[u8],
     chunk_idx: Option<usize>,
 ) -> WasmResult<FFIArrowRecordBatch> {
-    // Create IPC reader
-    let mut input_file = Cursor::new(arrow_file);
-    let stream_metadata = read_file_metadata(&mut input_file)?;
-    let arrow_ipc_reader = IPCFileReader::new(input_file, stream_metadata.clone(), None, None);
-    let schema = &stream_metadata.schema;
-
-    // Take the nth chunk and store it in memory to be used for FFI
-    if let Some(maybe_chunk) = arrow_ipc_reader.into_iter().nth(chunk_idx.unwrap_or(0)) {
-        let chunk = maybe_chunk?;
-        Ok(FFIArrowRecordBatch::from_chunk(chunk, schema.clone()))
-    } else {
-        Err(JsError::new("Index out of range"))
+    let (_, mut batches) = read_ipc_file(arrow_file)?;
+    let chunk_idx = chunk_idx.unwrap_or(0);
+    if chunk_idx >= batches.len() {
+        return Err(JsError::new("Index out of range"));
     }
+    Ok(FFIArrowRecordBatch::from_batch(batches.swap_remove(chunk_idx))?)
+}
+
+/// Every record batch sliced to `length` rows from `offset`, so that the
+/// exported arrays carry a non-zero offset into their buffers.
+#[wasm_bindgen(js_name = arrowIPCToFFISliced)]
+pub fn arrow_ipc_to_ffi_sliced(
+    arrow_file: &[u8],
+    offset: usize,
+    length: usize,
+) -> WasmResult<FFIArrowTable> {
+    let (schema, batches) = read_ipc_file(arrow_file)?;
+    let sliced: Vec<RecordBatch> = batches
+        .iter()
+        .map(|batch| batch.slice(offset, length))
+        .collect();
+    Ok(FFIArrowTable::new(&schema, &sliced)?)
 }
 
 #[wasm_bindgen(js_name = setPanicHook)]
