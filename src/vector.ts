@@ -1,8 +1,11 @@
 import * as arrow from "apache-arrow";
 import { DataType } from "apache-arrow";
-import { LargeList, isLargeList } from "./types";
+import { LargeList, isBinaryView, isLargeList, isUtf8View } from "./types";
 
 type NullBitmap = Uint8Array | null | undefined;
+
+/** The size of one element of a Utf8View / BinaryView views buffer. */
+const VIEW_WIDTH = 16;
 
 /**
 Parse an [`ArrowArray`](https://arrow.apache.org/docs/format/CDataInterface.html#the-arrowarray-structure) C FFI struct into an [`arrow.Vector`](https://arrow.apache.org/docs/js/classes/Arrow_dom.Vector.html) instance. Multiple `Vector` instances can be joined to make an [`arrow.Table`](https://arrow.apache.org/docs/js/classes/Arrow_dom.Table.html).
@@ -534,6 +537,51 @@ function parseDataContent<T extends DataType>({
       valueOffsets,
       data,
     });
+  }
+
+  if (isUtf8View(dataType) || isBinaryView(dataType)) {
+    // Buffers: validity, the 16-byte views, the variadic data buffers the
+    // views point into, and a trailing int64 buffer holding the byte length
+    // of each variadic buffer (the only record of those lengths).
+    // https://arrow.apache.org/docs/format/CDataInterface.html#c.ArrowArray.buffers
+    const [validityPtr, viewsPtr] = bufferPtrs;
+    const nVariadic = bufferPtrs.length - 3;
+    const sizesPtr = bufferPtrs[bufferPtrs.length - 1];
+
+    // Arrow JS addresses views by index but validity by `offset + index`, so
+    // the views start at the array's offset while the bitmap stays whole.
+    const nullBitmap = parseNullBitmap(
+      dataView.buffer,
+      validityPtr,
+      offset + length,
+      copy,
+    );
+    const viewsStart = viewsPtr + offset * VIEW_WIDTH;
+    const viewsByteLength = length * VIEW_WIDTH;
+    const views = copy
+      ? new Uint8Array(copyBuffer(dataView.buffer, viewsStart, viewsByteLength))
+      : new Uint8Array(dataView.buffer, viewsStart, viewsByteLength);
+
+    const variadicBuffers: Uint8Array[] = new Array(nVariadic);
+    for (let i = 0; i < nVariadic; i++) {
+      const byteLength = Number(dataView.getBigInt64(sizesPtr + i * 8, true));
+      const dataPtr = bufferPtrs[2 + i];
+      variadicBuffers[i] = copy
+        ? new Uint8Array(copyBuffer(dataView.buffer, dataPtr, byteLength))
+        : new Uint8Array(dataView.buffer, dataPtr, byteLength);
+    }
+
+    // Both view types share this layout; `makeData` dispatches on the type's
+    // id at runtime, but its overloads want one of the two statically.
+    return arrow.makeData({
+      type: dataType as unknown as arrow.Utf8View,
+      offset,
+      length,
+      nullCount,
+      nullBitmap,
+      views,
+      variadicBuffers,
+    }) as unknown as arrow.Data<T>;
   }
 
   if (DataType.isFixedSizeBinary(dataType)) {

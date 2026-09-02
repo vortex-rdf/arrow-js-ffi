@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Read `Utf8View` and `BinaryView` arrays (the C Data Interface's variadic-buffer layout), on their own and as dictionary values. Needs `apache-arrow` >= 21.2 at runtime; older versions keep working for every other type.
+- The Rust test helper (`tests/rust-arrow-ffi`) now builds on arrow-rs instead of the archived arrow2, which could not produce view arrays.
+
 ## [0.4.3] - 2025-08-28
 
 - Fix reading 64-bit Timestamp and Duration types https://github.com/kylebarron/arrow-js-ffi/pull/130

@@ -160,6 +160,8 @@ Most of the unsupported types should be pretty straightforward to implement; the
 - [x] Large Binary (Supported natively by Arrow JS as of v15)
 - [x] String
 - [x] Large String (Supported natively by Arrow JS as of v15)
+- [x] Binary View (Supported natively by Arrow JS as of v21.2)
+- [x] String View (Supported natively by Arrow JS as of v21.2)
 - [x] Fixed-width Binary
 
 ### Decimal

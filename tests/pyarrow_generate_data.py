@@ -244,6 +244,46 @@ def extension_array() -> pa.Array:
     return arr
 
 
+def string_view_array() -> pa.Array:
+    # Concatenating two arrays that each hold a value too long to inline keeps
+    # both data buffers, so the views reference more than one variadic buffer.
+    first = pa.array(["a string longer than twelve bytes"], type=pa.string_view())
+    second = pa.array(
+        ["foo", "another string longer than twelve bytes"], type=pa.string_view()
+    )
+    arr = pa.concat_arrays([first, second])
+    assert isinstance(arr, pa.StringViewArray)
+    # validity, views, and two data buffers
+    assert len(arr.buffers()) == 4
+    return arr
+
+
+def string_view_array_null() -> pa.Array:
+    arr = pa.array(
+        ["a", None, "a string longer than twelve bytes"], type=pa.string_view()
+    )
+    assert isinstance(arr, pa.StringViewArray)
+    assert arr.null_count == 1
+    return arr
+
+
+def binary_view_array() -> pa.Array:
+    arr = pa.array(
+        [b"a", b"ab", b"a binary value longer than twelve bytes"],
+        type=pa.binary_view(),
+    )
+    assert isinstance(arr, pa.BinaryViewArray)
+    return arr
+
+
+def dictionary_encoded_string_view_array() -> pa.DictionaryArray:
+    values = pa.array(
+        ["a", "a string longer than twelve bytes"], type=pa.string_view()
+    )
+    indices = pa.array([0, 1, 0], type=pa.int32())
+    return pa.DictionaryArray.from_arrays(indices, values)
+
+
 def table() -> pa.Table:
     return pa.table(
         {
@@ -268,6 +308,10 @@ def table() -> pa.Table:
             "duration": duration_array(),
             "dictionary_encoded_string": dictionary_encoded_string_array(),
             "dictionary_encoded_string_null": dictionary_encoded_string_array_null(),
+            "string_view": string_view_array(),
+            "string_view_null": string_view_array_null(),
+            "binary_view": binary_view_array(),
+            "dictionary_encoded_string_view": dictionary_encoded_string_view_array(),
         }
     )
 

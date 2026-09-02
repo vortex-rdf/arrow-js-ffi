@@ -1,4 +1,5 @@
 import { DataType, Field } from "apache-arrow";
+import type { BinaryView, Utf8View } from "apache-arrow";
 
 // Redefine the arrow Type enum to include LargeList, LargeBinary, and LargeUtf8
 export enum Type {
@@ -23,6 +24,8 @@ export enum Type {
   Duration = 18 /** Measure of elapsed time in either seconds, milliseconds, microseconds or nanoseconds. */,
   LargeBinary = 19 /** Large variable-length bytes (no guarantee of UTF8-ness) */,
   LargeUtf8 = 20 /** Large variable-length string as List<Char> */,
+  BinaryView = 23 /** Variable-length bytes as 16-byte views into variadic data buffers (Arrow JS as of v21.2) */,
+  Utf8View = 24 /** UTF8 variable-length string as 16-byte views into variadic data buffers (Arrow JS as of v21.2) */,
 
   // Not yet included in the upstream enum
   LargeList = 30,
@@ -85,4 +88,15 @@ export class LargeList<T extends DataType = any> extends DataType<
 
 export function isLargeList(x: any): x is LargeList {
   return x?.typeId === Type.LargeList;
+}
+
+// The view types exist in Arrow JS as of v21.2. Checking the type id keeps
+// these usable (always false) on older versions, which have no
+// `DataType.isUtf8View` / `DataType.isBinaryView`.
+export function isUtf8View(x: any): x is Utf8View {
+  return x?.typeId === Type.Utf8View;
+}
+
+export function isBinaryView(x: any): x is BinaryView {
+  return x?.typeId === Type.BinaryView;
 }

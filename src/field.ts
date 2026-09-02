@@ -185,6 +185,16 @@ function parseFieldContent({
     return new arrow.Field(name, type, flags.nullable, metadata);
   }
 
+  // Utf8View / BinaryView: Arrow JS has the types as of v21.2
+  if (formatString === "vu" || formatString === "vz") {
+    const typeName = formatString === "vu" ? "Utf8View" : "BinaryView";
+    const ViewType = arrow[typeName];
+    if (ViewType === undefined) {
+      throw new Error(`${typeName} requires apache-arrow >= 21.2`);
+    }
+    return new arrow.Field(name, new ViewType(), flags.nullable, metadata);
+  }
+
   // struct
   if (formatString === "+s") {
     const type = new arrow.Struct(childrenFields);
