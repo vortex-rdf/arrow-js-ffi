@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## [0.5.0] - 2026-09-03
+
+First release published as `@vortex-rdf/arrow-js-ffi`, a fork of [`arrow-js-ffi`](https://github.com/kylebarron/arrow-js-ffi) picking up from upstream 0.4.3.
 
 - Read `Utf8View` and `BinaryView` arrays (the C Data Interface's variadic-buffer layout), on their own and as dictionary values. Needs `apache-arrow` >= 21.2 at runtime; older versions keep working for every other type.
 - The Rust test helper (`tests/rust-arrow-ffi`) now builds on arrow-rs instead of the archived arrow2, which could not produce view arrays.

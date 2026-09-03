@@ -1,6 +1,6 @@
 {
-  "name": "arrow-js-ffi",
-  "version": "0.4.3",
+  "name": "@vortex-rdf/arrow-js-ffi",
+  "version": "0.5.0",
   "description": "Zero-copy reading of Arrow data from WebAssembly",
   "source": "src/index.ts",
   "umd:main": "dist/arrow-js-ffi.umd.js",
@@ -15,10 +15,16 @@
     "require": "./dist/arrow-js-ffi.cjs",
     "default": "./dist/arrow-js-ffi.es.mjs"
   },
-  "repository": "https://github.com/kylebarron/arrow-js-ffi",
+  "repository": "https://github.com/vortex-rdf/arrow-js-ffi",
   "author": "Kyle Barron <kylebarron2@gmail.com>",
+  "contributors": [
+    "Julian Rojas <julian.rojas87@gmail.com>"
+  ],
   "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "clean": "rimraf dist",
@@ -31,7 +37,8 @@
   },
   "files": [
     "dist/",
-    "src/"
+    "src/",
+    "CHANGELOG.md"
   ],
   "peerDependencies": {
     "apache-arrow": ">=15"

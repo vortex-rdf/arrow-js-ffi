@@ -1,12 +1,22 @@
-# arrow-js-ffi
+# @vortex-rdf/arrow-js-ffi
 
 Interpret [Arrow](https://arrow.apache.org/) memory across the WebAssembly boundary without serialization.
+
+This is a fork of [`arrow-js-ffi`](https://github.com/kylebarron/arrow-js-ffi) by Kyle Barron, continuing from upstream 0.4.3 and maintained for use in the [vortex-rdf](https://github.com/vortex-rdf) JavaScript bindings. It is MIT licensed, as the original is.
+
+## Installation
+
+```
+npm install @vortex-rdf/arrow-js-ffi
+```
+
+`apache-arrow` is a peer dependency (`>=15`). Reading `Utf8View` and `BinaryView` arrays additionally needs `apache-arrow >= 21.2` at runtime.
 
 ## Why?
 
 Arrow is a high-performance memory layout for analytical programs. Since Arrow's memory layout is defined to be the same in every implementation, programs that use Arrow in WebAssembly are using the same exact layout that [Arrow JS](https://arrow.apache.org/docs/js/) implements! This means we can use plain [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)s to move highly structured data back and forth to WebAssembly memory, entirely avoiding serialization.
 
-I wrote an [interactive blog post](https://observablehq.com/@kylebarron/zero-copy-apache-arrow-with-webassembly) that goes into more detail on why this is useful and how this library implements Arrow's [C Data Interface](https://arrow.apache.org/docs/format/CDataInterface.html) in JavaScript.
+Kyle Barron wrote an [interactive blog post](https://observablehq.com/@kylebarron/zero-copy-apache-arrow-with-webassembly) that goes into more detail on why this is useful and how this library implements Arrow's [C Data Interface](https://arrow.apache.org/docs/format/CDataInterface.html) in JavaScript.
 
 ## Usage
 

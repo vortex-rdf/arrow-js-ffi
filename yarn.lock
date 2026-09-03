@@ -615,6 +615,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vortex-rdf/arrow-js-ffi@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@vortex-rdf/arrow-js-ffi@workspace:."
+  dependencies:
+    "@rollup/plugin-terser": "npm:^1.0.0"
+    "@rollup/plugin-typescript": "npm:^12.3.0"
+    "@types/node": "npm:^24.13.3"
+    apache-arrow: "npm:^21.2.0"
+    prettier: "npm:^3.6.6"
+    rimraf: "npm:^6.1.3"
+    rollup: "npm:^4.63.1"
+    rollup-plugin-dts: "npm:^6.5.1"
+    rust-arrow-ffi: "link:./tests/rust-arrow-ffi/pkg"
+    ts-node: "npm:^10.9.1"
+    typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.11"
+  peerDependencies:
+    apache-arrow: ">=15"
+  languageName: unknown
+  linkType: soft
+
 "abbrev@npm:^5.0.0":
   version: 5.0.0
   resolution: "abbrev@npm:5.0.0"
@@ -660,27 +681,6 @@ __metadata:
   checksum: 10/969b491082f20cad166649fa4d2073ea9e974a4e5ac36247ca23d2e5a8b3cb12d60e9ff70a8acfe26d76566c71fd351ee5e6a9a6595157eb36f92b1fd64e1599
   languageName: node
   linkType: hard
-
-"arrow-js-ffi@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "arrow-js-ffi@workspace:."
-  dependencies:
-    "@rollup/plugin-terser": "npm:^1.0.0"
-    "@rollup/plugin-typescript": "npm:^12.3.0"
-    "@types/node": "npm:^24.13.3"
-    apache-arrow: "npm:^21.2.0"
-    prettier: "npm:^3.6.6"
-    rimraf: "npm:^6.1.3"
-    rollup: "npm:^4.63.1"
-    rollup-plugin-dts: "npm:^6.5.1"
-    rust-arrow-ffi: "link:./tests/rust-arrow-ffi/pkg"
-    ts-node: "npm:^10.9.1"
-    typescript: "npm:^6.0.3"
-    vitest: "npm:^4.1.11"
-  peerDependencies:
-    apache-arrow: ">=15"
-  languageName: unknown
-  linkType: soft
 
 "assertion-error@npm:^2.0.1":
   version: 2.0.1
@@ -1415,9 +1415,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rust-arrow-ffi@link:./tests/rust-arrow-ffi/pkg::locator=arrow-js-ffi%40workspace%3A.":
+"rust-arrow-ffi@link:./tests/rust-arrow-ffi/pkg::locator=%40vortex-rdf%2Farrow-js-ffi%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "rust-arrow-ffi@link:./tests/rust-arrow-ffi/pkg::locator=arrow-js-ffi%40workspace%3A."
+  resolution: "rust-arrow-ffi@link:./tests/rust-arrow-ffi/pkg::locator=%40vortex-rdf%2Farrow-js-ffi%40workspace%3A."
   languageName: node
   linkType: soft
 
