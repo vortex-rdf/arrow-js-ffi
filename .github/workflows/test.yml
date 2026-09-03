@@ -14,12 +14,13 @@ jobs:
   node-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
+      # Installs the Node and Yarn versions pinned in the `volta` field of package.json
       - name: Set up Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ".yarn/cache"
@@ -28,20 +29,12 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            profile: minimal
-            override: true
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install Wasm Pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - uses: Swatinem/rust-cache@v2
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
 
       - name: Build Rust wasm test helper
         run: cd tests/rust-arrow-ffi && yarn build && cd ../../
